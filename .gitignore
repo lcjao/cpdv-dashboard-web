@@ -1,2 +1,9 @@
 # temporary working dir
 tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
