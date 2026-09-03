@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import dashboard
+from routes import dashboard, analysis
 
 app = FastAPI(title="CPDV Dashboard API")
 
@@ -13,6 +13,7 @@ app.add_middleware(
 )
 
 app.include_router(dashboard.router)
+app.include_router(analysis.router)
 
 
 @app.get("/")
