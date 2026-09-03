@@ -5,6 +5,8 @@ import Header from './components/layout/Header';
 import BridgeSidebar from './components/layout/BridgeSidebar';
 import ChatPanel from './components/layout/ChatPanel';
 import ParamTable from './components/bridge/ParamTable';
+import CpdvChart from './components/charts/CpdvChart';
+import ProfileChart from './components/charts/ProfileChart';
 
 export default function App() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -29,13 +31,15 @@ export default function App() {
           <BridgeSidebar bridges={data.bridges} cur={cur} onSelect={setCur} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12, padding: 16, minHeight: 260 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>② CPDV 接触点位移变化（待接入图表）</h3>
-            <div style={{ color: 'var(--sub)', fontSize: 12 }}>当前: {b.name} · {b.cpdv_len} 点</div>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12, padding: 16 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>② CPDV 接触点位移变化（时间序列）</h3>
+            <div style={{ height: 260 }}>
+              <CpdvChart b={b} />
+            </div>
           </div>
-          <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12, padding: 16, minHeight: 180 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>③ 多裂缝预测 · 梁纵断面（待接入图表）</h3>
-            <div style={{ color: 'var(--sub)', fontSize: 12 }}>真 {b.n_true} 条 · 预测 {b.n_pred} 条</div>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12, padding: 16 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>③ 多裂缝预测 · 梁纵断面（位置×深度比）</h3>
+            <ProfileChart b={b} />
           </div>
           <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12, padding: 16 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>④ 桥梁参数</h3>
