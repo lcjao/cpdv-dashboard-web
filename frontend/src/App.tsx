@@ -46,7 +46,11 @@ export default function App() {
             <ParamTable params={b.params} />
           </div>
         </div>
-        <ChatPanel disabled />
+        <ChatPanel
+          bridges={data.bridges}
+          cur={cur}
+          onRefresh={() => api.fetchDashboard().then(setData)}
+        />
       </div>
     </div>
   );
