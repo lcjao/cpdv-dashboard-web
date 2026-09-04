@@ -7,11 +7,13 @@ import ChatPanel from './components/layout/ChatPanel';
 import ParamTable from './components/bridge/ParamTable';
 import CpdvChart from './components/charts/CpdvChart';
 import ProfileChart from './components/charts/ProfileChart';
+import SettingsDialog from './components/layout/SettingsDialog';
 
 export default function App() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [cur, setCur] = useState(0);
   const [err, setErr] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     api.fetchDashboard().then(setData).catch(e => setErr(String(e)));
@@ -24,7 +26,7 @@ export default function App() {
 
   return (
     <div style={{ maxWidth: 1440, margin: '0 auto', padding: '16px 20px 40px' }}>
-      <Header meta={data.meta} />
+      <Header meta={data.meta} onOpenSettings={() => setShowSettings(true)} />
       <div style={{ display: 'grid', gridTemplateColumns: '290px 1fr 320px', gap: 14, alignItems: 'start' }}>
         <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12, padding: 16 }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>① 桥梁工况</h3>
@@ -52,6 +54,7 @@ export default function App() {
           onRefresh={() => api.fetchDashboard().then(setData)}
         />
       </div>
+      <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 }
