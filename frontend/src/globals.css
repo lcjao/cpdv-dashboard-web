@@ -24,3 +24,26 @@ body {
   color: var(--ink);
   font-size: 14px;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sub); }
+
+/* Focus visible */
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* Selection */
+::selection { background: var(--blue-bg); color: var(--blue); }
+
+/* Utility */
+.mono { font-family: var(--mono); }
+.text-sub { color: var(--sub); }
+.text-blue { color: var(--blue); }
+.text-green { color: var(--green); }
+.text-amber { color: var(--amber); }
+.text-red { color: var(--red); }
+.bg-card { background: var(--card); }
+.border-line { border: 1px solid var(--line); }
+.rounded-12 { border-radius: 12px; }
