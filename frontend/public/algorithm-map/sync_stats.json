@@ -1,0 +1,14 @@
+{
+  "start_time": 1790734768.9998236,
+  "end_time": 1790734782.976911,
+  "files_parsed": 170,
+  "symbols_extracted": 745,
+  "contracts_parsed": 6,
+  "implementations_found": 11,
+  "backends_scanned": 0,
+  "components_registered": 0,
+  "errors": [],
+  "warnings": [
+    "代码库不存在: D:\\研\\土木水利\\论文\\代码\\github"
+  ]
+}

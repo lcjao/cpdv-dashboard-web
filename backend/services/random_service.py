@@ -1,4 +1,5 @@
 from executor import run
+from services.stdout_parser import parse as _parse
 
 
 def random_condition(mode: str, n_samples: int, positions: list):
@@ -11,4 +12,11 @@ def random_condition(mode: str, n_samples: int, positions: list):
     ]
     if mode == "multi_pos" and positions:
         argv += ["--positions", *map(str, positions)]
-    return {"stdout": run(argv)}
+    out = run(argv, cmd="random")
+    return {
+        "stdout": out,
+        "mode": mode,
+        "n_samples": n_samples,
+        "positions": positions,
+        "parsed": _parse(out),  # G11
+    }

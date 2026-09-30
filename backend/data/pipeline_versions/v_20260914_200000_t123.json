@@ -1,0 +1,18 @@
+{
+  "version_id": "v_20260914_200000_t123",
+  "task_id": "pipeline_test123",
+  "name": "测试版本",
+  "instance": {
+    "id": "test-id",
+    "name": "测试流水线",
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "model"
+      }
+    ],
+    "connections": []
+  },
+  "created_at": "2026-09-14T20:00:00",
+  "metadata": {}
+}

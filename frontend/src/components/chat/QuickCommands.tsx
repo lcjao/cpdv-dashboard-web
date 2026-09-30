@@ -1,12 +1,22 @@
-const QUICK = ['看板总览', '预测损伤', '多裂缝预测', '随机工况分析', '对比工况', '刷新看板'];
+import type { CommandMeta } from '../../lib/api-client';
 
-export default function QuickCommands({ onCmd }: { onCmd: (t: string) => void }) {
+// G9: 按钮列表从 command-meta 动态生成（之前是写死 6 条）。
+// 显示 quick=true 的命令，按原 config.COMMAND_META 顺序排（无需排序）。
+export default function QuickCommands({
+  onCmd,
+  meta,
+}: {
+  onCmd: (t: string) => void;
+  meta: CommandMeta[];
+}) {
+  const items = meta.filter((m) => m.quick);
   return (
     <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-      {QUICK.map(q => (
+      {items.map((m) => (
         <button
-          key={q}
-          onClick={() => onCmd(q)}
+          key={m.action}
+          onClick={() => onCmd(m.name)}
+          title={m.description}
           style={{
             padding: '4px 12px',
             fontSize: 11,
@@ -17,7 +27,7 @@ export default function QuickCommands({ onCmd }: { onCmd: (t: string) => void })
             cursor: 'pointer',
           }}
         >
-          {q}
+          {m.name}
         </button>
       ))}
     </div>

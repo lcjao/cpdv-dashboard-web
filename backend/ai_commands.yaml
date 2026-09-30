@@ -1,0 +1,799 @@
+# AI Command System - Command Registry
+# Defines all AI-executable commands with schemas, permissions, and pipeline mappings
+
+version: "1.0"
+description: "AI Conversation Command System for CPDV Dashboard closed-loop execution"
+
+# ─────────────────────────────────────────────────────────────────────
+# Command Categories
+# ─────────────────────────────────────────────────────────────────────
+categories:
+  pipeline_control:
+    label: "Pipeline Control"
+    description: "Execute, monitor, and manage pipeline stages"
+    color: "#3B82F6"
+    icon: "⚙️"
+    
+  data_query:
+    label: "Data Query"
+    description: "Query and export pipeline artifacts"
+    color: "#10B981"
+    icon: "📊"
+    
+  dashboard_sync:
+    label: "Dashboard Sync"
+    description: "Synchronize dashboard widgets with pipeline outputs"
+    color: "#8B5CF6"
+    icon: "🔄"
+    
+  analysis:
+    label: "Analysis & Diagnosis"
+    description: "Run analyses and interpret results"
+    color: "#F59E0B"
+    icon: "🔍"
+
+# ─────────────────────────────────────────────────────────────────────
+# Command Definitions
+# ─────────────────────────────────────────────────────────────────────
+commands:
+  # ============================================================
+  # Pipeline Control Commands
+  # ============================================================
+  pipeline.execute:
+    category: "pipeline_control"
+    summary: "Execute pipeline(s) with specified mode and stages"
+    description: |
+      Launch one or more pipelines (1-6) with quick/full mode.
+      Supports stage-level granularity and async execution with progress callbacks.
+    permission: "execute"
+    parameters:
+      type: "object"
+      required: ["pipelines"]
+      properties:
+        pipelines:
+          type: "array"
+          items:
+            type: "string"
+            enum: 
+              - "pipeline_1_cpdv_simulation"
+              - "pipeline_2_single_crack_bp"
+              - "pipeline_3_lstm_sequence"
+              - "pipeline_4_multi_crack"
+              - "pipeline_5_pinn"
+              - "pipeline_6_cpdv_analysis"
+              - "dashboard_export"
+          description: "Pipeline IDs to execute"
+          minItems: 1
+        mode:
+          type: "string"
+          enum: ["quick", "full"]
+          default: "quick"
+          description: "Execution mode: quick (~15 min) or full (~4-6 hours)"
+        stages:
+          type: "array"
+          items:
+            type: "string"
+          description: "Specific stages to run (optional, runs all critical stages if omitted)"
+        async:
+          type: "boolean"
+          default: true
+          description: "Run asynchronously with progress updates via WebSocket"
+        auto_sync_dashboard:
+          type: "boolean"
+          default: true
+          description: "Automatically sync dashboard after completion"
+    returns:
+      type: "object"
+      properties:
+        task_id:
+          type: "string"
+          description: "Unique task identifier for status polling"
+        status:
+          type: "string"
+          enum: ["started", "queued"]
+        message:
+          type: "string"
+    examples:
+      - description: "Quick CPDV analysis only"
+        params:
+          pipelines: ["pipeline_6_cpdv_analysis"]
+          mode: "quick"
+      - description: "Full production run (all pipelines)"
+        params:
+          pipelines: ["pipeline_1_cpdv_simulation", "pipeline_2_single_crack_bp", "pipeline_3_lstm_sequence", "pipeline_4_multi_crack", "pipeline_5_pinn", "pipeline_6_cpdv_analysis"]
+          mode: "full"
+
+  pipeline.status:
+    category: "pipeline_control"
+    summary: "Query pipeline execution status"
+    description: "Get real-time status, progress, logs, and outputs for a running or completed pipeline task"
+    permission: "read"
+    parameters:
+      type: "object"
+      required: ["task_id"]
+      properties:
+        task_id:
+          type: "string"
+          description: "Task ID returned from pipeline.execute"
+    returns:
+      type: "object"
+      properties:
+        task_id:
+          type: "string"
+        phase:
+          type: "string"
+          description: "Current execution phase (data_generation, model_training, inference, analysis, dashboard_export)"
+        stage:
+          type: "string"
+          description: "Current stage within phase"
+        percent:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        logs:
+          type: "array"
+          items:
+            type: "string"
+        outputs:
+          type: "array"
+          items:
+            type: "string"
+            description: "Generated artifact file paths"
+        error:
+          type: "string"
+          nullable: true
+
+  pipeline.cancel:
+    category: "pipeline_control"
+    summary: "Cancel a running pipeline task"
+    description: "Attempt to gracefully cancel a pipeline task by sending SIGTERM to subprocess"
+    permission: "execute"
+    parameters:
+      type: "object"
+      required: ["task_id"]
+      properties:
+        task_id:
+          type: "string"
+    returns:
+      type: "object"
+      properties:
+        cancelled:
+          type: "boolean"
+        message:
+          type: "string"
+
+  pipeline.list:
+    category: "pipeline_control"
+    summary: "List all available pipelines with their stages and dependencies"
+    description: "Returns complete pipeline catalog from pipeline_master.yaml"
+    permission: "read"
+    parameters:
+      type: "object"
+      properties: {}
+    returns:
+      type: "object"
+      properties:
+        pipelines:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+              name:
+                type: "string"
+              description:
+                type: "string"
+              stages:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "string"
+                    name:
+                      type: "string"
+                    description:
+                      type: "string"
+                    critical:
+                      type: "boolean"
+              dependencies:
+                type: "array"
+                items:
+                  type: "string"
+              estimated_time:
+                type: "string"
+
+  # ============================================================
+  # Data Query Commands
+  # ============================================================
+  data.query:
+    category: "data_query"
+    summary: "Query pipeline artifacts by type"
+    description: |
+      Retrieve structured data artifacts generated by pipelines.
+      Supports filtering and pagination for large datasets.
+    permission: "read"
+    parameters:
+      type: "object"
+      required: ["artifact"]
+      properties:
+        artifact:
+          type: "string"
+          enum:
+            - "dashboard_summary"
+            - "dashboard_data"
+            - "cpdv_signals"
+            - "peak_analysis"
+            - "cv_analysis"
+            - "model_metrics"
+            - "multi_crack_predictions"
+            - "training_history"
+            - "road_profiles"
+        filters:
+          type: "object"
+          description: "Optional filters specific to artifact type"
+          properties:
+            bridge_id:
+              type: "string"
+            model_type:
+              type: "string"
+              enum: ["cracknet", "lstm", "multi_crack_dual", "pinn"]
+            depth:
+              type: "number"
+            position:
+              type: "number"
+            scenario_id:
+              type: "integer"
+        limit:
+          type: "integer"
+          default: 100
+          minimum: 1
+          maximum: 1000
+        offset:
+          type: "integer"
+          default: 0
+          minimum: 0
+    returns:
+      type: "object"
+      properties:
+        data:
+          type: "object"
+          description: "Artifact-specific data structure"
+        meta:
+          type: "object"
+          properties:
+            artifact:
+              type: "string"
+            total_count:
+              type: "integer"
+            generated_at:
+              type: "string"
+              format: "date-time"
+
+  data.export:
+    category: "data_query"
+    summary: "Export artifact to file"
+    description: "Export data artifact to JSON/JS/CSV format for frontend consumption or download"
+    permission: "write"
+    parameters:
+      type: "object"
+      required: ["artifact", "format"]
+      properties:
+        artifact:
+          type: "string"
+          enum:
+            - "dashboard_summary"
+            - "dashboard_data"
+            - "cpdv_signals"
+            - "peak_analysis"
+            - "cv_analysis"
+        format:
+          type: "string"
+          enum: ["json", "js", "csv"]
+          default: "json"
+        output_path:
+          type: "string"
+          description: "Optional custom output path (defaults to standard locations)"
+        filters:
+          type: "object"
+    returns:
+      type: "object"
+      properties:
+        file_path:
+          type: "string"
+        size_bytes:
+          type: "integer"
+        format:
+          type: "string"
+
+  data.preview:
+    category: "data_query"
+    summary: "Preview data structure and samples"
+    description: "Get schema information and sample records for an artifact without loading full dataset"
+    permission: "read"
+    parameters:
+      type: "object"
+      required: ["artifact"]
+      properties:
+        artifact:
+          type: "string"
+        limit:
+          type: "integer"
+          default: 5
+          minimum: 1
+          maximum: 50
+    returns:
+      type: "object"
+      properties:
+        schema:
+          type: "object"
+          description: "JSON Schema of the artifact"
+        samples:
+          type: "array"
+          items:
+            type: "object"
+        field_descriptions:
+          type: "object"
+          additionalProperties:
+            type: "string"
+
+  # ============================================================
+  # Dashboard Sync Commands
+  # ============================================================
+  dashboard.sync:
+    category: "dashboard_sync"
+    summary: "Full dashboard data synchronization"
+    description: |
+      Fetch all data needed for specified dashboard widgets in one call.
+      Returns structured data keyed by widget ID, ready for direct binding.
+    permission: "read"
+    parameters:
+      type: "object"
+      properties:
+        widgets:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+              - "cpdv_timeseries"
+              - "model_scorecard"
+              - "peak_vs_position"
+              - "peak_vs_depth"
+              - "cv_analysis"
+              - "multi_position_boxplot"
+              - "road_profile"
+              - "error_distribution"
+              - "multi_crack_comparison"
+          default: ["cpdv_timeseries", "model_scorecard", "peak_vs_position", "cv_analysis"]
+          description: "Widget IDs to sync (default: all core widgets)"
+        force_refresh:
+          type: "boolean"
+          default: false
+          description: "Force re-read from disk instead of cache"
+    returns:
+      type: "object"
+      properties:
+        widget_data:
+          type: "object"
+          additionalProperties:
+            type: "object"
+          description: "Keyed by widget ID, contains widget-specific data structure"
+        timestamp:
+          type: "string"
+          format: "date-time"
+          description: "ISO timestamp of data snapshot"
+        source:
+          type: "string"
+          description: "Data source identifier"
+
+  dashboard.subscribe:
+    category: "dashboard_sync"
+    summary: "Subscribe to real-time dashboard updates"
+    description: "Create WebSocket subscription for automatic widget updates when pipeline completes"
+    permission: "read"
+    parameters:
+      type: "object"
+      properties:
+        widgets:
+          type: "array"
+          items:
+            type: "string"
+          default: ["cpdv_timeseries", "model_scorecard"]
+        interval_ms:
+          type: "integer"
+          default: 5000
+          minimum: 1000
+          maximum: 60000
+          description: "Polling interval for checking updates"
+    returns:
+      type: "object"
+      properties:
+        subscription_id:
+          type: "string"
+        widgets:
+          type: "array"
+          items:
+            type: "string"
+        interval_ms:
+          type: "integer"
+
+  dashboard.unsubscribe:
+    category: "dashboard_sync"
+    summary: "Cancel dashboard subscription"
+    permission: "write"
+    parameters:
+      type: "object"
+      required: ["subscription_id"]
+      properties:
+        subscription_id:
+          type: "string"
+    returns:
+      type: "object"
+      properties:
+        unsubscribed:
+          type: "boolean"
+
+  # ============================================================
+  # Analysis Commands
+  # ============================================================
+  analysis.run:
+    category: "analysis"
+    summary: "Execute specific CPDV analysis"
+    description: |
+      Run targeted analysis: CV analysis, peak vs position/depth, signal waveform.
+      Uses Pipeline 6 scripts directly.
+    permission: "execute"
+    parameters:
+      type: "object"
+      required: ["type"]
+      properties:
+        type:
+          type: "string"
+          enum: ["cv", "peak_vs_pos", "peak_vs_depth", "signal_waveform", "road_profile", "error_distribution"]
+          description: "Analysis type to execute"
+        params:
+          type: "object"
+          description: "Analysis-specific parameters"
+          properties:
+            depths:
+              type: "array"
+              items:
+                type: "number"
+              default: [0.1, 0.15, 0.2, 0.25, 0.3]
+            distances:
+              type: "array"
+              items:
+                type: "number"
+              default: [5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5]
+            signal_depth:
+              type: "number"
+              default: 0.2
+            n_samples:
+              type: "integer"
+              default: 50
+              minimum: 10
+              maximum: 500
+            crack_pos:
+              type: "number"
+              default: 15.0
+            crack_depth:
+              type: "number"
+              default: 0.2
+            mode:
+              type: "string"
+              enum: ["single", "multi_pos"]
+              default: "single"
+    returns:
+      type: "object"
+      properties:
+        result:
+          type: "object"
+          description: "Analysis results (metrics, statistics, arrays)"
+        charts:
+          type: "array"
+          items:
+            type: "string"
+          description: "Generated chart file paths"
+        interpretation:
+          type: "string"
+          nullable: true
+
+  analysis.interpret:
+    category: "analysis"
+    summary: "AI interpretation of analysis results"
+    description: "Natural language explanation of analysis results with recommendations"
+    permission: "read"
+    parameters:
+      type: "object"
+      required: ["artifact", "question"]
+      properties:
+        artifact:
+          type: "string"
+          enum: ["dashboard_summary", "cv_analysis", "peak_analysis", "model_metrics"]
+        question:
+          type: "string"
+          description: "Specific question about the analysis"
+    returns:
+      type: "object"
+      properties:
+        interpretation:
+          type: "string"
+        recommendations:
+          type: "array"
+          items:
+            type: "string"
+        confidence:
+          type: "number"
+          minimum: 0
+          maximum: 1
+
+  analysis.compare:
+    category: "analysis"
+    summary: "Compare models or scenarios"
+    description: "Side-by-side comparison of model metrics, scenarios, or pipeline runs"
+    permission: "read"
+    parameters:
+      type: "object"
+      required: ["models", "metrics"]
+      properties:
+        models:
+          type: "array"
+          items:
+            type: "string"
+            enum: ["cracknet", "lstm", "multi_crack_dual", "pinn", "multi_crack_basic"]
+          minItems: 2
+          maxItems: 4
+        metrics:
+          type: "array"
+          items:
+            type: "string"
+            enum: ["f1", "precision", "recall", "mae_pos", "mae_depth", "r2", "pde_residual", "data_mse"]
+          minItems: 1
+        scenarios:
+          type: "array"
+          items:
+            type: "string"
+          description: "Optional scenario filters"
+    returns:
+      type: "object"
+      properties:
+        comparison:
+          type: "object"
+          description: "Detailed comparison table"
+        winner:
+          type: "string"
+          description: "Best performing model for primary metric"
+        summary:
+          type: "string"
+
+# ─────────────────────────────────────────────────────────────────────
+# Widget Definitions (for dashboard.sync)
+# ─────────────────────────────────────────────────────────────────────
+widgets:
+  cpdv_timeseries:
+    id: "cpdv_timeseries"
+    title: "CPDV 接触点位移变化 (时间序列)"
+    type: "timeseries"
+    pipeline_source:
+      primary: 6
+      script: "04_cpdv_analysis.py --mode signal"
+      artifact: "cpdv_signals"
+    refresh_trigger: "pipeline_complete"
+    data_transform: "downsample_cpdv"
+    default_params:
+      depth: 0.2
+      downsample: 400
+
+  model_scorecard:
+    id: "model_scorecard"
+    title: "模型性能对比"
+    type: "scorecard"
+    pipeline_source:
+      primary: 6
+      secondary: [2, 3, 4, 5]
+      script: "export_dashboard_data.py"
+      artifact: "dashboard_summary"
+    refresh_trigger: "pipeline_complete"
+    data_transform: "normalize_metrics"
+
+  peak_vs_position:
+    id: "peak_vs_position"
+    title: "CPDV 峰值 vs 裂纹位置"
+    type: "scatter"
+    pipeline_source:
+      primary: 6
+      script: "04_cpdv_analysis.py --mode peak"
+      artifact: "peak_analysis"
+    refresh_trigger: "pipeline_complete"
+
+  peak_vs_depth:
+    id: "peak_vs_depth"
+    title: "CPDV 峰值 vs 裂纹深度"
+    type: "scatter"
+    pipeline_source:
+      primary: 6
+      script: "04_cpdv_analysis.py --mode peak"
+      artifact: "peak_analysis"
+    refresh_trigger: "pipeline_complete"
+
+  cv_analysis:
+    id: "cv_analysis"
+    title: "随机工况 CV 分析 / 多工况判定"
+    type: "boxplot"
+    pipeline_source:
+      primary: 6
+      script: "05_random_condition_cpdv.py"
+      artifact: "cv_analysis"
+    refresh_trigger: "pipeline_complete"
+
+  multi_position_boxplot:
+    id: "multi_position_boxplot"
+    title: "多位置 CPDV 峰值箱线图对比"
+    type: "boxplot"
+    pipeline_source:
+      primary: 6
+      script: "05_random_condition_cpdv.py --mode multi_pos"
+      artifact: "cv_analysis"
+    refresh_trigger: "pipeline_complete"
+
+  road_profile:
+    id: "road_profile"
+    title: "ABC 级路面谱"
+    type: "line"
+    pipeline_source:
+      primary: 6
+      script: "06_generate_road_profile.py"
+      artifact: "road_profiles"
+    refresh_trigger: "manual"
+
+  error_distribution:
+    id: "error_distribution"
+    title: "双头模型误差分布"
+    type: "histogram"
+    pipeline_source:
+      primary: 4
+      secondary: [6]
+      script: "06_plot_error_distribution.py"
+      artifact: "error_distribution"
+    refresh_trigger: "pipeline_complete"
+
+  multi_crack_comparison:
+    id: "multi_crack_comparison"
+    title: "多裂缝预测 vs 真实对比"
+    type: "comparison"
+    pipeline_source:
+      primary: 4
+      secondary: [6]
+      script: "export_dashboard_data.py"
+      artifact: "multi_crack_predictions"
+    refresh_trigger: "pipeline_complete"
+
+# ─────────────────────────────────────────────────────────────────────
+# Pipeline Stage Mapping (for granular execution)
+# ─────────────────────────────────────────────────────────────────────
+pipeline_stages:
+  pipeline_1_cpdv_simulation:
+    stages:
+      - id: "stage_1a_single_crack_fixed"
+        name: "Single-Crack Fixed Condition"
+        script: "scripts/01_generate_data.py"
+        critical: true
+      - id: "stage_1b_multi_condition"
+        name: "Multi-Condition Random Sampling"
+        script: "scripts/01_generate_data.py --multi_condition"
+        critical: true
+      - id: "stage_1c_predefined_multi_crack"
+        name: "Predefined Multi-Crack Scenarios"
+        script: "scripts/01_generate_data.py --predefined"
+        critical: false
+      - id: "stage_1d_feature_engineering"
+        name: "Feature Engineering (20D features)"
+        script: "scripts/feature_extractor.py"
+        critical: false
+
+  pipeline_2_single_crack_bp:
+    stages:
+      - id: "stage_2a_bp_training"
+        name: "BP Network Training"
+        script: "scripts/02_train_model.py"
+        critical: true
+      - id: "stage_2b_bp_inference"
+        name: "BP Inference & Evaluation"
+        script: "scripts/03_run_inference.py"
+        critical: true
+      - id: "stage_2c_visualization"
+        name: "Training Visualization"
+        script: "scripts/03_run_inference.py --plot"
+        critical: false
+
+  pipeline_3_lstm_sequence:
+    stages:
+      - id: "stage_3a_sequence_data_prep"
+        name: "Sequence Data Preparation"
+        script: "scripts/02_train_lstm_model.py --prepare_data"
+        critical: true
+      - id: "stage_3b_lstm_training"
+        name: "LSTM Training"
+        script: "scripts/02_train_lstm_model.py"
+        critical: true
+      - id: "stage_3c_lstm_inference"
+        name: "LSTM Inference"
+        script: "scripts/03_run_lstm_inference.py"
+        critical: true
+
+  pipeline_4_multi_crack:
+    stages:
+      - id: "stage_4a_multi_condition_data"
+        name: "Multi-Condition Data Gen"
+        script: "scripts/04_train_multi_crack.py --prepare_data"
+        critical: true
+      - id: "stage_4b_basic_multi_crack_training"
+        name: "Basic Multi-Crack Training"
+        script: "scripts/04_train_multi_crack.py"
+        critical: true
+      - id: "stage_4c_dual_head_training"
+        name: "Dual-Head Three-Phase Training"
+        script: "scripts/04_train_multi_crack.py --dual_head --epochs 200"
+        critical: true
+      - id: "stage_4d_multi_crack_inference"
+        name: "Multi-Crack Inference"
+        script: "scripts/05_infer_multi_crack.py"
+        critical: true
+      - id: "stage_4e_error_distribution"
+        name: "Error Distribution Analysis"
+        script: "scripts/06_plot_error_distribution.py"
+        critical: false
+
+  pipeline_5_pinn:
+    stages:
+      - id: "stage_5a_pinn_data_gen"
+        name: "PINN Data Generation"
+        script: "scripts/08_generate_pinn_data.py"
+        critical: true
+      - id: "stage_5b_pinn_training"
+        name: "PINN Training"
+        script: "scripts/09_train_pinn_model.py"
+        critical: true
+      - id: "stage_5c_pinn_inference"
+        name: "PINN Inference"
+        script: "scripts/10_run_pinn_inference.py"
+        critical: true
+
+  pipeline_6_cpdv_analysis:
+    stages:
+      - id: "stage_6a_peak_analysis"
+        name: "Peak vs Distance/Depth Analysis"
+        script: "scripts/04_cpdv_analysis.py --mode peak"
+        critical: true
+      - id: "stage_6b_signal_waveform"
+        name: "Signal Waveform Visualization"
+        script: "scripts/04_cpdv_analysis.py --mode signal"
+        critical: true
+      - id: "stage_6c_random_condition_single"
+        name: "Random Condition CV (Single Position)"
+        script: "scripts/05_random_condition_cpdv.py"
+        critical: true
+      - id: "stage_6d_random_condition_multi_pos"
+        name: "Random Condition Multi-Position Boxplot"
+        script: "scripts/05_random_condition_cpdv.py --mode multi_pos"
+        critical: true
+      - id: "stage_6e_generate_charts"
+        name: "Generate All CPDV Charts"
+        script: "scripts/06_generate_cpdv_charts.py"
+        critical: false
+      - id: "stage_6f_road_profile"
+        name: "Road Profile Visualization"
+        script: "scripts/06_generate_road_profile.py"
+        critical: false
+      - id: "stage_6g_dashboard_export"
+        name: "Dashboard Data Export"
+        script: "scripts/export_dashboard_data.py"
+        critical: true
+
+  dashboard_export:
+    stages:
+      - id: "stage_export"
+        name: "Export Dashboard Summary"
+        script: "scripts/export_dashboard_data.py"
+        critical: true

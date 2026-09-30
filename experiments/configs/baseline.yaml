@@ -1,0 +1,62 @@
+# experiments/configs/baseline.yaml
+# 原始 Pipeline 基线配置
+
+experiment:
+  name: "baseline"
+  seed: 42
+  device: "auto"
+
+components:
+  data_loader:
+    type: "legacy"
+    params:
+      data_path: "outputs/data/multi_condition.npz"
+  
+  model:
+    type: "legacy_dual_head"
+    params:
+      hidden_dim: 256
+      num_layers: 3
+      max_cracks: 5
+      dropout: 0.2
+  
+  loss:
+    type: "legacy_dual_head"
+    params:
+      miss_weight: 5.0
+      reg_weight: 1.0
+  
+  optimizer:
+    type: "legacy_adamw"
+    params:
+      lr: 1e-3
+      weight_decay: 1e-5
+  
+  trainer:
+    type: "legacy_three_phase"
+    params:
+      phase1_epochs: 20
+      phase2_epochs: 30
+      phase3_epochs: 100
+      early_stopping_patience: 30
+      lr: 1e-3
+      lr_finetune: 1e-4
+      weight_decay: 1e-5
+      clip_grad: 1.0
+      miss_weight: 5.0
+      reg_weight: 1.0
+      pos_threshold: 0.0
+      cls_threshold: 0.3
+      match_cost: 5.0
+  
+  evaluator:
+    type: "legacy_hungarian"
+    params:
+      cls_threshold: 0.3
+      pos_threshold: 0.0
+      match_cost: 5.0
+
+output:
+  save_dir: "experiments/results/${experiment.name}_${timestamp}"
+  save_checkpoints: true
+  log_wandb: false

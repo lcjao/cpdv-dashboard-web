@@ -1,4 +1,5 @@
 from executor import run
+from services.stdout_parser import parse as _parse
 
 
 def predict_single(model: str, input_data: str):
@@ -8,4 +9,10 @@ def predict_single(model: str, input_data: str):
         "--model", model,
         "--input", input_data,
     ]
-    return {"stdout": run(argv)}
+    out = run(argv, cmd="predict")
+    return {
+        "stdout": out,
+        "model": model,
+        "input_data": input_data,
+        "parsed": _parse(out),  # G11
+    }

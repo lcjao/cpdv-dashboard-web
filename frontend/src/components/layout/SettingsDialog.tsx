@@ -54,6 +54,27 @@ export default function SettingsDialog({
             />
           </div>
         ))}
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: 'block', fontSize: 12, color: 'var(--sub)', marginBottom: 4 }}>
+            temperature
+          </label>
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            max={2}
+            value={cfg.temperature}
+            onChange={e => setCfg(c => ({ ...c, temperature: Number(e.target.value) }))}
+            style={{
+              width: '100%',
+              padding: 8,
+              border: '1px solid var(--line)',
+              borderRadius: 8,
+              fontFamily: 'var(--mono)',
+              fontSize: 13,
+            }}
+          />
+        </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
             onClick={() => {

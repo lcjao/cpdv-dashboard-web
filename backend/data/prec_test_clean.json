@@ -1,0 +1,149 @@
+{
+ "svc_defaults": {
+  "CLS_THRESHOLD": "0.3",
+  "MATCH_COST": "5.0",
+  "MAX_CPDV_LENGTH": "5000"
+ },
+ "scheme_report": {
+  "A_now_baseline": {
+   "total_hits": 3
+  },
+  "A2_floor4e-4": {
+   "total_hits": 6
+  },
+  "Z_zero_pad": {
+   "total_hits": 0
+  },
+  "Z_tail_zero": {
+   "total_hits": 3
+  },
+  "A2_floor1e-3": {
+   "total_hits": 3
+  },
+  "B_row_std": {
+   "total_hits": 0
+  }
+ },
+ "per_bridge": {
+  "A_now_baseline": {
+   "桥梁01": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 2.08,
+    "depth": 0.1934
+   },
+   "桥梁02": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 1.29,
+    "depth": 0.2334
+   },
+   "桥梁03": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 2.08,
+    "depth": 0.1934
+   }
+  },
+  "A2_floor4e-4": {
+   "桥梁01": {
+    "hits": 2,
+    "thr": 0.1,
+    "pos": 2.63,
+    "depth": 0.0369
+   },
+   "桥梁02": {
+    "hits": 2,
+    "thr": 0.1,
+    "pos": 2.79,
+    "depth": 0.0718
+   },
+   "桥梁03": {
+    "hits": 2,
+    "thr": 0.1,
+    "pos": 2.63,
+    "depth": 0.0369
+   }
+  },
+  "Z_zero_pad": {
+   "桥梁01": {
+    "hits": 0,
+    "thr": 0.1,
+    "pos": null,
+    "depth": null
+   },
+   "桥梁02": {
+    "hits": 0,
+    "thr": 0.1,
+    "pos": null,
+    "depth": null
+   },
+   "桥梁03": {
+    "hits": 0,
+    "thr": 0.1,
+    "pos": null,
+    "depth": null
+   }
+  },
+  "Z_tail_zero": {
+   "桥梁01": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 2.43,
+    "depth": 0.0351
+   },
+   "桥梁02": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 0.08,
+    "depth": 0.0149
+   },
+   "桥梁03": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 2.43,
+    "depth": 0.0351
+   }
+  },
+  "A2_floor1e-3": {
+   "桥梁01": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 2.46,
+    "depth": 0.0353
+   },
+   "桥梁02": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 0.05,
+    "depth": 0.0147
+   },
+   "桥梁03": {
+    "hits": 1,
+    "thr": 0.1,
+    "pos": 2.46,
+    "depth": 0.0353
+   }
+  },
+  "B_row_std": {
+   "桥梁01": {
+    "hits": 0,
+    "thr": 0.1,
+    "pos": null,
+    "depth": null
+   },
+   "桥梁02": {
+    "hits": 0,
+    "thr": 0.1,
+    "pos": null,
+    "depth": null
+   },
+   "桥梁03": {
+    "hits": 0,
+    "thr": 0.1,
+    "pos": null,
+    "depth": null
+   }
+  }
+ }
+}

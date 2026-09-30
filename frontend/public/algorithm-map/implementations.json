@@ -1,0 +1,176 @@
+{
+  "backend_framework.protocols.data_loader.DataLoaderProtocol": [
+    {
+      "protocol": "backend_framework.protocols.data_loader.DataLoaderProtocol",
+      "implementation": "LegacyDataLoader",
+      "qualified_name": "backend_framework.adapters.legacy_data_loader.LegacyDataLoader",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_data_loader.py",
+      "implements_all_required": true,
+      "missing_attributes": [],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 1.0
+    }
+  ],
+  "backend_framework.protocols.evaluator.EvaluatorProtocol": [
+    {
+      "protocol": "backend_framework.protocols.evaluator.EvaluatorProtocol",
+      "implementation": "LegacyHungarianEvaluator",
+      "qualified_name": "backend_framework.adapters.legacy_evaluator.LegacyHungarianEvaluator",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_evaluator.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "name"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    }
+  ],
+  "backend_framework.protocols.loss.LossProtocol": [
+    {
+      "protocol": "backend_framework.protocols.loss.LossProtocol",
+      "implementation": "LegacyWeightedLoss",
+      "qualified_name": "backend_framework.adapters.legacy_loss.LegacyWeightedLoss",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_loss.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "name"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    },
+    {
+      "protocol": "backend_framework.protocols.loss.LossProtocol",
+      "implementation": "LegacyDualHeadLoss",
+      "qualified_name": "backend_framework.adapters.legacy_loss.LegacyDualHeadLoss",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_loss.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "name"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    }
+  ],
+  "backend_framework.protocols.model.ModelProtocol": [
+    {
+      "protocol": "backend_framework.protocols.model.ModelProtocol",
+      "implementation": "LegacyModel",
+      "qualified_name": "backend_framework.adapters.legacy_model.LegacyModel",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_model.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "max_cracks",
+        "output_dim",
+        "dual_head"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    },
+    {
+      "protocol": "backend_framework.protocols.model.ModelProtocol",
+      "implementation": "model",
+      "qualified_name": "backend_framework.adapters.legacy_model.LegacyModel.model",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_model.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "max_cracks",
+        "output_dim",
+        "dual_head"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    },
+    {
+      "protocol": "backend_framework.protocols.model.ModelProtocol",
+      "implementation": "get_model_info",
+      "qualified_name": "backend_framework.adapters.legacy_model.LegacyModel.get_model_info",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_model.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "max_cracks",
+        "output_dim",
+        "dual_head"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    },
+    {
+      "protocol": "backend_framework.protocols.model.ModelProtocol",
+      "implementation": "LegacyDualHeadModel",
+      "qualified_name": "backend_framework.adapters.legacy_model.LegacyDualHeadModel",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_model.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "max_cracks",
+        "output_dim",
+        "dual_head"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    },
+    {
+      "protocol": "backend_framework.protocols.model.ModelProtocol",
+      "implementation": "model",
+      "qualified_name": "backend_framework.adapters.legacy_model.LegacyDualHeadModel.model",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_model.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "max_cracks",
+        "output_dim",
+        "dual_head"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    },
+    {
+      "protocol": "backend_framework.protocols.model.ModelProtocol",
+      "implementation": "get_model_info",
+      "qualified_name": "backend_framework.adapters.legacy_model.LegacyDualHeadModel.get_model_info",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_model.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "max_cracks",
+        "output_dim",
+        "dual_head"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    }
+  ],
+  "backend_framework.protocols.trainer.TrainerProtocol": [
+    {
+      "protocol": "backend_framework.protocols.trainer.TrainerProtocol",
+      "implementation": "LegacyThreePhaseTrainer",
+      "qualified_name": "backend_framework.adapters.legacy_trainer.LegacyThreePhaseTrainer",
+      "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\adapters\\legacy_trainer.py",
+      "implements_all_required": false,
+      "missing_attributes": [
+        "name"
+      ],
+      "missing_methods": [],
+      "signature_mismatches": [],
+      "extra_methods": [],
+      "score": 0.0
+    }
+  ]
+}

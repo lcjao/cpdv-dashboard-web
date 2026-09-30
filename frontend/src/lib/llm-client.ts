@@ -65,8 +65,11 @@ export interface ParsedResponse {
 /** Upper bound on tool-call rounds per user turn (guard against runaway loops) */
 export const MAX_TOOL_CALLS = 8;
 
-/** Hard per-attempt timeout (ms) for a single LLM stream */
-export const LLM_TIMEOUT_MS = 120_000;
+/** Hard timeout (ms) to receive response headers, incl. retries (flash function-calling prefill can take minutes) */
+export const LLM_TIMEOUT_MS = 240_000;
+
+/** First-byte watchdog (ms): aborts if no streamed chunk arrives within this window; cleared once the first chunk lands */
+export const LLM_FIRST_BYTE_TIMEOUT_MS = 240_000;
 
 /** Number of exponential-backoff retries for transient failures */
 export const LLM_MAX_RETRIES = 3;
@@ -236,7 +239,7 @@ export async function callLLM(
   const body: Record<string, unknown> = {
     model: cfg.model,
     messages: compressMessages(normalizedMessages),
-    temperature: 0.4,
+    temperature: Number(cfg.temperature ?? 0.4),
     max_tokens: LLM_MAX_TOKENS,
     stream: true,
   };
@@ -302,10 +305,40 @@ export async function callLLM(
   let buf = '';
 
   const toolCallsMap = new Map<number, ToolCall>();
-  const announcedToolNames = new Set<string>();
 
+  // 首字节看门狗：只约束「首个 chunk」。收到第一个 chunk 后即解除，
+  // 后续在途数据不再受整体超时一刀切（flash 的 function-calling prefill 首字可达数十秒）。
+  async function readFirstChunk() {
+    const readP = reader.read();
+    const guard = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        const err = new Error('Request timed out (first byte)');
+        err.name = 'TimeoutError';
+        reject(err);
+      }, LLM_FIRST_BYTE_TIMEOUT_MS);
+    });
+    try {
+      return await Promise.race([readP, guard]);
+    } catch (e) {
+      void readP.catch(() => {});
+      try {
+        await reader.cancel();
+      } catch {
+        /* ignore */
+      }
+      if (isAbort(e)) {
+        throw new Error('LLM_TIMEOUT: Request timed out (first byte)');
+      }
+      throw e;
+    }
+  }
+
+  let isFirstRead = true;
   while (true) {
-    const { done, value } = await reader.read();
+    const { done, value } = isFirstRead
+      ? await readFirstChunk()
+      : await reader.read();
+    isFirstRead = false;
     if (done) break;
     buf += decoder.decode(value, { stream: true });
 
@@ -333,11 +366,10 @@ export async function callLLM(
             if (tc?.function?.name) existing.name = tc.function.name;
             if (tc?.function?.arguments) existing.arguments += tc.function.arguments;
             toolCallsMap.set(idx, existing);
-            if (existing.name && !announcedToolNames.has(existing.name)) {
-              announcedToolNames.add(existing.name);
-              const toolMsg = `\n⚙️ [tool] ${existing.name} ...\n`;
-              onChunk(toolMsg);
-            }
+            // 注意：不在这里显示"计划调用"消息，因为：
+            // 1. 如果LLM真正返回tool_calls，ChatPanel会在执行时显示状态
+            // 2. 如果只显示文本，会误导用户以为执行了实际没有
+            // 工具执行状态由 ChatPanel.tsx 的 appendExecutionStatus 处理
           }
         }
       } catch {
@@ -404,23 +436,51 @@ export function parseAIResponse(raw: string): ParsedResponse {
 export function buildSystemPrompt(curBridge?: string): string {
   return [
     '你是多桥梁CPDV损伤看板的调度层。',
-    '你绝不自己计算CPDV，所有数值必须来自底层pipeline的真实输出。',
-    '解析用户命令 → 调用相应工具执行计算 → 将结果回填看板。',
     '',
-    '核心命令：',
-    '| 命令 | 动作 |',
-    '|------|------|',
-    '| 「看板总览」 | 汇总各桥状态 |',
-    '| 「注册桥梁 <名>」[参数] | 注册桥梁（单位: km/h→m/s、kN→N、GPa→Pa、t→kg、mm→m） |',
-    '| 「计算CPDV」[桥名][参数] | 运行CPDV计算 |',
-    '| 「预测损伤」[桥名][模型] | 单裂缝预测 |',
-    '| 「多裂缝预测」[桥名] | 多裂缝推理 |',
-    '| 「随机工况分析」[裂纹参数] | 随机工况分析 |',
-    '| 「对比 <桥A> <桥B>」 | 双桥对比 |',
-    '| 「刷新看板」 | 重新汇总数据 |',
+    '═══ 核心原则 ═══',
+    '1. 先理解用户意图，再决定行动',
+    '2. 明确的执行命令 → 立即调用工具，不要犹豫',
+    '3. 模糊的请求/询问 → 先分析或询问，再决定',
+    '4. 不确定时 → 先询问用户',
     '',
-    '汇报规范：数值永远带单位（m、m/s、%、Pa）；预测结果必附模型标签 + MAE指标 + 是否达标。',
-    '训练模型或耗时操作必须先报告预计耗时并请求确认。',
+    '═══ 立即执行的情况 ═══',
+    '以下命令出现时，必须立即使用 tool_calls 调用工具：',
+    '- "计算CPDV"、"运行CPDV"、"CPDV计算"',
+    '- "预测损伤"、"单裂缝预测"、"多裂缝预测"',
+    '- "随机工况分析"、"CV分析"',
+    '- "训练模型"、"开始训练"',
+    '- "对比"、"比较两个桥"',
+    '- "刷新看板"、"更新数据"',
+    '- "评估模型"',
+    '- "列出桥梁"、"有哪些桥"',
+    '- "注册桥梁"',
+    '- 任何包含 "cb_" 前缀的命令',
+    '',
+    '═══ 先思考的情况 ═══',
+    '以下情况先分析或询问，不要急于调用工具：',
+    '- 用户在询问状态、描述问题、反馈bug',
+    '- 用户在讨论、提问、请求解释',
+    '- 用户输入模糊，需要澄清具体需求',
+    '',
+    '═══ 工具调用规则 ═══',
+    '使用 tool_calls 调用工具，禁止用文字描述调用！',
+    '纯文本回复不会触发执行，只有 tool_calls 才会被系统处理。',
+    '',
+    '═══ 可用工具 ═══',
+    '| 工具名 | 说明 |',
+    '|--------|------|',
+    '| cb_cpdv | CPDV计算（distances/depth或depths） |',
+    '| cb_predict | 单裂缝预测（model、input_data） |',
+    '| cb_multi_crack | 多裂缝预测（model、input_data） |',
+    '| cb_random_condition | 随机工况分析（mode、n_samples） |',
+    '| cb_train | 训练模型（长任务，需确认） |',
+    '| cb_compare | 双桥对比（a、b） |',
+    '| cb_refresh | 刷新看板数据 |',
+    '| cb_evaluate | 评估模型指标 |',
+    '| cb_list | 列出桥梁 |',
+    '| cb_register | 注册新桥梁 |',
+    '',
+    '汇报规范：数值带单位；预测结果附模型标签+MAE+是否达标。',
     curBridge ? `当前选中的桥梁: ${curBridge}` : '',
   ].join('\n');
 }

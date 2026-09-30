@@ -12,7 +12,18 @@ export default function ProfileChart({ b }: { b: Bridge }) {
     const L = b.params.L;
     const pad = { l: 50, r: 16, t: 20, b: 34 };
     const X = (pos: number) => pad.l + (W - pad.l - pad.r) * (pos / L);
-    const Y = (depth: number) => pad.t + (H - pad.t - pad.b) * (1 - depth / 0.35);
+
+    // G17: 动态 depth 轴上限 = max(0.35, 数据最大 depth) × 1.15 padding
+    // 旧版写死 0.35，导致真实裂缝 depth=0.5 时被切到图外。
+    const dataMax = Math.max(
+      0,
+      ...b.true_cracks.map(t => t.depth || 0),
+      ...b.pred_cracks.map(p => p.depth || 0),
+    );
+    const yMax = Math.max(0.35, dataMax) * 1.15;
+    // 刻度 0~1，向上对齐到 0.05 整数倍更整齐
+    const yMaxAligned = Math.ceil(yMax * 20) / 20;
+    const Y = (depth: number) => pad.t + (H - pad.t - pad.b) * (1 - depth / yMaxAligned);
 
     // 梁体背景
     ctx.fillStyle = '#f0f2f5';
@@ -24,6 +35,15 @@ export default function ProfileChart({ b }: { b: Bridge }) {
       const x = pad.l + (W - pad.l - pad.r) * i / 5;
       ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b); ctx.stroke();
       ctx.textAlign = 'center'; ctx.fillText((L * i / 5).toFixed(0), x, H - pad.b + 14);
+    }
+    // Y 轴刻度（depth 0/25%/50%/75%/100%）
+    for (let i = 0; i <= 4; i++) {
+      const ratio = i / 4;
+      const y = pad.t + (H - pad.t - pad.b) * ratio;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y);
+      ctx.strokeStyle = '#e3e8f0'; ctx.stroke();
+      ctx.fillStyle = '#98a2b3'; ctx.textAlign = 'right';
+      ctx.fillText(((1 - ratio) * yMaxAligned * 100).toFixed(0) + '%', pad.l - 4, y + 4);
     }
 
     // 真实裂缝（绿三角）

@@ -7,3 +7,17 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+
+# nested algorithm project (separate repo, 2.3GB incl. >100MB .npz)
+algorithm-code/
+
+# env files (keep .env.example)
+.env
+
+# transient artifacts
+backend/tmp_*
+backend/*.log
+frontend/out.txt
+frontend/tsc_errors.txt
+frontend/tsc_output.txt
+frontend/tsconfig.tsbuildinfo
