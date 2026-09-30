@@ -1,0 +1,62 @@
+# experiments/configs/exp_v2.yaml
+# 新方案 v2 示例配置 - 完全不同的架构（示例）
+
+experiment:
+  name: "exp_v2"
+  seed: 42
+  device: "auto"
+
+components:
+  data_loader:
+    type: "legacy"
+    params:
+      data_path: "outputs/data/multi_condition.npz"
+  
+  model:
+    type: "legacy_dual_head"
+    params:
+      hidden_dim: 256
+      num_layers: 5          # 更深的网络
+      max_cracks: 5
+      dropout: 0.15
+  
+  loss:
+    type: "legacy_dual_head"
+    params:
+      miss_weight: 7.0       # 更强的漏检惩罚
+      reg_weight: 0.8
+  
+  optimizer:
+    type: "legacy_adamw"
+    params:
+      lr: 2e-3               # 稍高学习率
+      weight_decay: 5e-5
+  
+  trainer:
+    type: "legacy_three_phase"
+    params:
+      phase1_epochs: 25
+      phase2_epochs: 35
+      phase3_epochs: 120
+      early_stopping_patience: 35
+      lr: 2e-3
+      lr_finetune: 2e-4
+      weight_decay: 5e-5
+      clip_grad: 1.0
+      miss_weight: 7.0
+      reg_weight: 0.8
+      pos_threshold: 0.0
+      cls_threshold: 0.25    # 降低分类阈值
+      match_cost: 4.0
+  
+  evaluator:
+    type: "legacy_hungarian"
+    params:
+      cls_threshold: 0.25
+      pos_threshold: 0.0
+      match_cost: 4.0
+
+output:
+  save_dir: "experiments/results/${experiment.name}_${timestamp}"
+  save_checkpoints: true
+  log_wandb: false

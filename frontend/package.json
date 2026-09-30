@@ -1,0 +1,31 @@
+{
+  "name": "cpdv-dashboard-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@types/cytoscape": "^3.21.9",
+    "chart.js": "^4.4.7",
+    "cytoscape": "^3.34.3",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "dompurify": "^3.4.11",
+    "marked": "^18.0.5",
+    "react": "^19.2.4",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4",
+    "@types/dompurify": "^3.0.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

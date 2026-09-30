@@ -1,0 +1,20 @@
+# experiments/configs/ab_test.yaml
+# A/B 测试配置：对比 baseline, exp_v1, exp_v2
+
+ab_test:
+  name: "model_comparison_202609"
+  seed: 42
+  n_runs: 3                 # 每个变体重复 3 次（演示用，生产建议 5-10）
+  statistical_test: "wilcoxon"  # wilcoxon / mannwhitney / ttest
+  alpha: 0.05
+  
+  variants:
+    - name: "baseline"
+      config: "baseline.yaml"
+    - name: "exp_v1"
+      config: "exp_v1.yaml"
+    - name: "exp_v2"
+      config: "exp_v2.yaml"
+  
+  primary_metric: "f1"
+  secondary_metrics: ["pos_mae", "depth_mae", "recall", "precision"]

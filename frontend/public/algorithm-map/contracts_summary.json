@@ -1,0 +1,31 @@
+{
+  "total_protocols": 6,
+  "total_implementations": 11,
+  "by_protocol": {
+    "backend_framework.protocols.data_loader.DataLoaderProtocol": {
+      "implementations": 1,
+      "fully_compliant": 1,
+      "avg_score": 1.0
+    },
+    "backend_framework.protocols.evaluator.EvaluatorProtocol": {
+      "implementations": 1,
+      "fully_compliant": 0,
+      "avg_score": 0.0
+    },
+    "backend_framework.protocols.loss.LossProtocol": {
+      "implementations": 2,
+      "fully_compliant": 0,
+      "avg_score": 0.0
+    },
+    "backend_framework.protocols.model.ModelProtocol": {
+      "implementations": 6,
+      "fully_compliant": 0,
+      "avg_score": 0.0
+    },
+    "backend_framework.protocols.trainer.TrainerProtocol": {
+      "implementations": 1,
+      "fully_compliant": 0,
+      "avg_score": 0.0
+    }
+  }
+}

@@ -1,0 +1,725 @@
+{
+  "backend_framework.protocols.data_loader.DataLoaderProtocol": {
+    "name": "DataLoaderProtocol",
+    "qualified_name": "backend_framework.protocols.data_loader.DataLoaderProtocol",
+    "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\protocols\\data_loader.py",
+    "docstring": "数据加载器协议\n\n所有后端数据加载器必须实现此接口。\n返回格式统一，便于 TrainerProtocol 直接使用。",
+    "required_attributes": [],
+    "required_methods": [],
+    "optional_methods": [
+      {
+        "name": "get_train_loader",
+        "parameters": [],
+        "return_type": "torch.utils.data.DataLoader",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取训练数据 DataLoader\n\nArgs:\n    batch_size: 批大小\n    shuffle: 是否打乱\n    num_workers: 数据加载进程数\n    **kwargs: 后端特定参数\n    \nReturns:\n    PyTorch DataLoader，yield (batch_x, batch_y)",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_val_loader",
+        "parameters": [],
+        "return_type": "torch.utils.data.DataLoader",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取验证数据 DataLoader",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_test_loader",
+        "parameters": [],
+        "return_type": "torch.utils.data.DataLoader",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取测试数据 DataLoader",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_data_arrays",
+        "parameters": [],
+        "return_type": "Dict[str, np.ndarray]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取原始 numpy 数组（用于评估、导出等）\n\nReturns:\n    dict with keys: X_train, y_train, X_val, y_val, X_test, y_test, stats\n    stats 可选，包含 X_mean, X_std, y_mean, y_std 等归一化参数",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_input_dim",
+        "parameters": [],
+        "return_type": "int",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取输入特征维度",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_max_cracks",
+        "parameters": [],
+        "return_type": "int",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取最大裂缝数（由标签维度推导：y.shape[0] // 2）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_stats",
+        "parameters": [],
+        "return_type": "Dict[str, np.ndarray]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取归一化统计量（可选）\n\nReturns:\n    dict with optional keys: X_mean, X_std, y_mean, y_std",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      }
+    ],
+    "metadata": {
+      "source": "backend_framework/protocols"
+    }
+  },
+  "backend_framework.protocols.evaluator.EvaluatorProtocol": {
+    "name": "EvaluatorProtocol",
+    "qualified_name": "backend_framework.protocols.evaluator.EvaluatorProtocol",
+    "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\protocols\\evaluator.py",
+    "docstring": "评估器协议\n\n所有后端评估器必须实现此接口。\n支持完整评估流程：加载模型、推理、匈牙利匹配、指标计算、结果导出。",
+    "required_attributes": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "docstring": null
+      }
+    ],
+    "required_methods": [],
+    "optional_methods": [
+      {
+        "name": "evaluate",
+        "parameters": [],
+        "return_type": "EvaluationResult",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "执行完整评估流程\n\nArgs:\n    model: 已训练模型（已 load_state_dict）\n    test_loader: 测试数据加载器\n    loss_fn: 损失函数（可选，用于计算 test loss）\n    config: 评估配置，包含：\n        - cls_threshold: float = 0.3 (双头模型分类阈值)\n        - pos_threshold: float = 0.0 (基础模型位置阈值)\n        - match_cost: float = 5.0 (匈牙利匹配最大位置代价)\n        - device: str = \"auto\"\n        - save_details: bool = False (是否保存逐样本详情)\n        - output_dir: str = None (详细结果保存目录)\n        \nReturns:\n    EvaluationResult: 标准化评估结果",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "evaluate_multiple",
+        "parameters": [],
+        "return_type": "List[EvaluationResult]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "对多个模型进行评估（支持多轮重复）\n\nArgs:\n    model_paths: 模型文件路径列表\n    test_loader: 测试数据加载器\n    loss_fn: 损失函数\n    config: 评估配置\n    n_runs: 每个模型重复评估次数（用于统计显著性）\n    \nReturns:\n    EvaluationResult 列表，长度 = len(model_paths) * n_runs",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "compute_metrics",
+        "parameters": [],
+        "return_type": "Dict[str, float]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "计算指标（纯 numpy，不依赖模型前向）\n\nArgs:\n    pred_batch: (batch_size, max_cracks * 2) 预测回归值\n    target_batch: (batch_size, max_cracks * 2) 真实标签\n    cls_pred_batch: (batch_size, max_cracks) 分类概率/logits（双头模型）\n    config: 指标计算配置\n    \nReturns:\n    metrics dict",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_default_config",
+        "parameters": [],
+        "return_type": "Dict[str, Any]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取默认评估配置",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "validate_config",
+        "parameters": [],
+        "return_type": "List[str]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "校验配置",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      }
+    ],
+    "metadata": {
+      "source": "backend_framework/protocols"
+    }
+  },
+  "backend_framework.protocols.loss.LossProtocol": {
+    "name": "LossProtocol",
+    "qualified_name": "backend_framework.protocols.loss.LossProtocol",
+    "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\protocols\\loss.py",
+    "docstring": "损失函数协议\n\n所有后端损失函数必须实现此接口。\n支持单一损失值返回，或 (total_loss, loss_dict) 多组件返回。",
+    "required_attributes": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "docstring": null
+      }
+    ],
+    "required_methods": [],
+    "optional_methods": [
+      {
+        "name": "forward",
+        "parameters": [],
+        "return_type": "Union[torch.Tensor, Tuple[torch.Tensor, Dict[str, torch.Tensor]]]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "计算损失\n\nArgs:\n    pred: 模型输出\n        单头: (batch_size, max_cracks * 2)\n        双头: (cls_pred, reg_pred) 其中 cls_pred: (batch_size, max_cracks), reg_pred: (batch_size, max_cracks * 2)\n    target: (batch_size, max_cracks * 2) 真实标签，填充位为 -1\n    **kwargs: 损失特定参数（如 miss_weight, reg_weight, cls_threshold 等）\n    \nReturns:\n    单一张量: total_loss\n    或元组: (total_loss, loss_dict) 其中 loss_dict 包含各分量如 {\"cls_loss\": ..., \"reg_loss\": ...}",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "__call__",
+        "parameters": [],
+        "return_type": "Union[torch.Tensor, Tuple[torch.Tensor, Dict[str, torch.Tensor]]]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "别名：forward",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_config",
+        "parameters": [],
+        "return_type": "Dict[str, Any]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取损失函数配置（用于记录、复现）\n\nReturns:\n    dict: 所有超参数",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "set_config",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "动态更新配置",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      }
+    ],
+    "metadata": {
+      "source": "backend_framework/protocols"
+    }
+  },
+  "backend_framework.protocols.model.ModelProtocol": {
+    "name": "ModelProtocol",
+    "qualified_name": "backend_framework.protocols.model.ModelProtocol",
+    "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\protocols\\model.py",
+    "docstring": "模型协议\n\n所有后端模型必须实现此接口。\n支持单头（基础）和双头（分类+回归）两种架构。",
+    "required_attributes": [
+      {
+        "name": "max_cracks",
+        "type": "int",
+        "required": true,
+        "docstring": null
+      },
+      {
+        "name": "output_dim",
+        "type": "int",
+        "required": true,
+        "docstring": null
+      },
+      {
+        "name": "dual_head",
+        "type": "bool",
+        "required": true,
+        "docstring": null
+      }
+    ],
+    "required_methods": [],
+    "optional_methods": [
+      {
+        "name": "forward",
+        "parameters": [],
+        "return_type": "Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "前向传播\n\nArgs:\n    x: (batch_size, input_dim) 输入张量\n    \nReturns:\n    单头: (batch_size, max_cracks * 2) 回归输出\n    双头: (cls_out, reg_out) 其中\n        cls_out: (batch_size, max_cracks) 分类 logits\n        reg_out: (batch_size, max_cracks * 2) 回归输出",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "__call__",
+        "parameters": [],
+        "return_type": "Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "别名：forward",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "parameters",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "返回模型参数迭代器（用于优化器）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "named_parameters",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "返回命名参数迭代器",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_parameters",
+        "parameters": [],
+        "return_type": "Dict[str, torch.Tensor]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取所有参数的 state_dict 格式字典",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "state_dict",
+        "parameters": [],
+        "return_type": "Dict[str, torch.Tensor]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取模型状态字典（含参数、缓冲区）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "load_state_dict",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "加载模型状态字典",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "save",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "保存模型到文件\n\nArgs:\n    path: 保存路径\n    **metadata: 额外元数据（input_dim, hidden_dim, num_layers, max_cracks, dual_head, metrics 等）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "load",
+        "parameters": [],
+        "return_type": "'ModelProtocol'",
+        "is_async": false,
+        "is_classmethod": true,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "从文件加载模型（类方法）\n\nArgs:\n    path: 模型文件路径\n    device: 目标设备\n    \nReturns:\n    实例化的模型",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "decode_output",
+        "parameters": [],
+        "return_type": "List[List[Dict]]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "将网络输出解码为裂缝列表\n\n单头模型: decode_output(pred, threshold=0.0)\n双头模型: decode_output(cls_pred, reg_pred, cls_threshold=0.3)\n\nReturns:\n    List[List[Dict]]: batch_size 个样本，每个样本为裂缝列表\n    每个裂缝 Dict: {\"position\": float, \"depth\": float}",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_model_info",
+        "parameters": [],
+        "return_type": "Dict[str, Any]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取模型元信息（用于日志、记录）\n\nReturns:\n    dict: input_dim, hidden_dim, num_layers, max_cracks, dual_head, param_count 等",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "num_parameters",
+        "parameters": [],
+        "return_type": "int",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取总参数量",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "train",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "设置训练/评估模式",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "eval",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "设置评估模式",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "to",
+        "parameters": [],
+        "return_type": "'ModelProtocol'",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "移动到设备",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      }
+    ],
+    "metadata": {
+      "source": "backend_framework/protocols"
+    }
+  },
+  "backend_framework.protocols.optimizer.OptimizerProtocol": {
+    "name": "OptimizerProtocol",
+    "qualified_name": "backend_framework.protocols.optimizer.OptimizerProtocol",
+    "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\protocols\\optimizer.py",
+    "docstring": "优化器协议\n\n所有后端优化器必须实现此接口。\n封装 PyTorch Optimizer，提供统一接口。",
+    "required_attributes": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "docstring": null
+      }
+    ],
+    "required_methods": [],
+    "optional_methods": [
+      {
+        "name": "step",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "执行一步参数更新",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "zero_grad",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "清零梯度\n\nArgs:\n    set_to_none: True 时将梯度设为 None（节省内存），False 时设为 0",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_lr",
+        "parameters": [],
+        "return_type": "float",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取当前学习率（主参数组）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "set_lr",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "设置学习率（所有参数组）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_lr_scheduler",
+        "parameters": [],
+        "return_type": "Optional[Any]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取关联的学习率调度器（可选）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "state_dict",
+        "parameters": [],
+        "return_type": "Dict[str, Any]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取优化器状态字典（用于 checkpoint）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "load_state_dict",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "加载优化器状态字典",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "add_param_group",
+        "parameters": [],
+        "return_type": null,
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "添加参数组",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "param_groups",
+        "parameters": [],
+        "return_type": "list",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": true,
+        "docstring": "参数组列表",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_config",
+        "parameters": [],
+        "return_type": "Dict[str, Any]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取优化器配置（用于记录、复现）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "create",
+        "parameters": [],
+        "return_type": "'OptimizerProtocol'",
+        "is_async": false,
+        "is_classmethod": true,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "工厂方法：创建优化器实例\n\nArgs:\n    model_params: model.parameters()\n    lr: 学习率\n    weight_decay: 权重衰减\n    **kwargs: 优化器特定参数（如 betas, eps, momentum 等）\n    \nReturns:\n    OptimizerProtocol 实例",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      }
+    ],
+    "metadata": {
+      "source": "backend_framework/protocols"
+    }
+  },
+  "backend_framework.protocols.trainer.TrainerProtocol": {
+    "name": "TrainerProtocol",
+    "qualified_name": "backend_framework.protocols.trainer.TrainerProtocol",
+    "file_path": "D:\\python\\pythonProject\\AI\\AI agent\\cpdv-dashboard-web\\backend_framework\\protocols\\trainer.py",
+    "docstring": "训练器协议\n\n所有后端训练器必须实现此接口。\n封装完整训练流程：数据准备、模型创建、训练循环、验证、早停、保存。",
+    "required_attributes": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "docstring": null
+      }
+    ],
+    "required_methods": [],
+    "optional_methods": [
+      {
+        "name": "train",
+        "parameters": [],
+        "return_type": "TrainResult",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "执行完整训练流程\n\nArgs:\n    model: 模型实例（已初始化，未训练）\n    train_loader: 训练数据加载器\n    val_loader: 验证数据加载器\n    loss_fn: 损失函数\n    optimizer: 优化器\n    config: 训练配置字典，包含：\n        - max_epochs: int\n        - phase1_epochs: int (可选)\n        - phase2_epochs: int (可选)\n        - phase3_epochs: int (可选)\n        - early_stopping_patience: int\n        - gradient_accumulation_steps: int\n        - clip_grad: float\n        - lr_finetune: float\n        - device: str (\"cuda\"/\"cpu\")\n        - save_dir: str\n        - seed: int\n    progress_callback: 可选进度回调 stage_name, message, percent, extra_data\n    \nReturns:\n    TrainResult: 标准化训练结果",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "evaluate",
+        "parameters": [],
+        "return_type": "Dict[str, float]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "在测试集上评估模型\n\nArgs:\n    model: 已训练模型\n    test_loader: 测试数据加载器\n    loss_fn: 损失函数\n    config: 评估配置，包含：\n        - cls_threshold: float (双头模型分类阈值)\n        - pos_threshold: float (基础模型位置阈值)\n        - match_cost: float (匈牙利匹配最大代价)\n        - device: str\n        \nReturns:\n    metrics dict: {pos_mae, depth_mae, recall, precision, f1, n_matched, n_gt, n_pred}",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "get_default_config",
+        "parameters": [],
+        "return_type": "Dict[str, Any]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "获取默认训练配置",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      },
+      {
+        "name": "validate_config",
+        "parameters": [],
+        "return_type": "List[str]",
+        "is_async": false,
+        "is_classmethod": false,
+        "is_staticmethod": false,
+        "is_property": false,
+        "docstring": "校验配置，返回错误信息列表（空表示通过）",
+        "raises": [],
+        "preconditions": [],
+        "postconditions": []
+      }
+    ],
+    "metadata": {
+      "source": "backend_framework/protocols"
+    }
+  }
+}

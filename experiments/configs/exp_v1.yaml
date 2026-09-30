@@ -1,0 +1,62 @@
+# experiments/configs/exp_v1.yaml
+# 新方案 v1 示例配置 - 仅替换模型和损失函数
+
+experiment:
+  name: "exp_v1"
+  seed: 42
+  device: "auto"
+
+components:
+  data_loader:
+    type: "legacy"
+    params:
+      data_path: "outputs/data/multi_condition.npz"
+  
+  model:
+    type: "legacy_dual_head"  # 这里可以换成 custom_v1_model 等新实现
+    params:
+      hidden_dim: 512        # 增大隐藏层
+      num_layers: 4          # 增加层数
+      max_cracks: 5
+      dropout: 0.1           # 降低 dropout
+  
+  loss:
+    type: "legacy_dual_head"
+    params:
+      miss_weight: 3.0       # 调整权重
+      reg_weight: 1.5
+  
+  optimizer:
+    type: "legacy_adamw"
+    params:
+      lr: 5e-4               # 降低学习率
+      weight_decay: 1e-4
+  
+  trainer:
+    type: "legacy_three_phase"
+    params:
+      phase1_epochs: 30
+      phase2_epochs: 40
+      phase3_epochs: 150
+      early_stopping_patience: 40
+      lr: 5e-4
+      lr_finetune: 5e-5
+      weight_decay: 1e-4
+      clip_grad: 1.0
+      miss_weight: 3.0
+      reg_weight: 1.5
+      pos_threshold: 0.0
+      cls_threshold: 0.3
+      match_cost: 5.0
+  
+  evaluator:
+    type: "legacy_hungarian"
+    params:
+      cls_threshold: 0.3
+      pos_threshold: 0.0
+      match_cost: 5.0
+
+output:
+  save_dir: "experiments/results/${experiment.name}_${timestamp}"
+  save_checkpoints: true
+  log_wandb: false
