@@ -12,14 +12,12 @@
 
 > 前端 AlgorithmSidebar 默认指向「整理后算法库」，可在右上角下拉切换到「原始 Pipeline」。
 
-## 启动
-- **一键（推荐）**: 双击 `start_all.bat`，自动清残留 + 调起 `start_backend.bat` 和 `start_frontend.bat` 两个独立终端窗口。窗口不关就一直在。
+- **一键（推荐）**: 双击 `start_all.bat`。自动探测 Python/Node（可用 `start_all.bat [python路径] [node路径]` 手动指定），安装前后端依赖、同步算法代码索引、清理旧监听，然后弹出后端/前端两个独立窗口（关闭窗口即停止服务）
 - 后端（手动）: `cd backend && python -m uvicorn main:app --reload --port 8765`
   （端口与 `frontend/vite.config.ts` 的 proxy `VITE_API_TARGET` 默认一致；若改端口请同步设置 `VITE_API_TARGET=http://127.0.0.1:新端口`）
 - 前端: `cd frontend && npm run dev` → http://localhost:5173
 - 验证: 浏览器访问 http://localhost:5173，看板应显示 3 座桥 + Header 指标卡（哪怕都是 0 也算通）；如空白/红字看浏览器 DevTools Console
-- **如果看到 `connect ECONNREFUSED 127.0.0.1:8000`**：vite.config.ts 的 proxy 没读到 8765，立刻 `cat frontend/vite.config.ts | findstr "API_TARGET"` 确认是 8765 而不是 8000；或全局搜 `localhost:8000` 检查有没有别处又写错了。
-- **如果 `start_all.bat` 双击后窗口瞬间关闭**：可能是 PowerShell 权限问题，右键 `start_all.bat` → "以管理员身份运行"。或手动分别双击 `start_backend.bat` + `start_frontend.bat`。
+- 前端（单独）: `start_frontend.bat [node路径]` — 自动探测 node/npm，Vite 默认 5173，被占则回退 5174；或 `cd frontend && npm run dev`
 
 ## 配置
 - LLM：在右上角 ⚙ 设置中填入 LLM 配置（baseUrl/model/apiKey/systemPrompt）。
